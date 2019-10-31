@@ -3,6 +3,47 @@
            https://api.github.com/users/<your name>
 */
 
+const parent = document.querySelector('.cards');
+
+// Request for my info
+let myData = axios.get('https://api.github.com/users/marfan')
+ .then(res => {
+    parent.prepend(userCard(res.data));
+  });
+
+
+// add followers tabs
+const tabParent = document.createElement('div');
+  tabParent.classList.add('tabs')
+  tabParent.classList.add('card')
+  tabParent.style.flexWrap = 'wrap';
+  tabParent.style.justifyContent = 'space-evenly';
+  tabParent.style.textAlign = 'center';
+const tabTitleContainer = document.createElement('div');
+  tabTitleContainer.style.width = '100%';
+const tabTitle = document.createElement('h1');
+  tabTitle.textContent = 'Loyal Followers';
+  tabTitle.style.fontSize = '2rem';
+  tabTitle.style.marginBottom = '.5rem';
+const tabSubTitle = document.createElement('h3');
+  tabSubTitle.textContent = 'Click for details';
+  tabSubTitle.style.fontSize = '1.5rem'
+  tabSubTitle.style.marginBottom = '1rem';
+
+  tabParent.appendChild(tabTitleContainer);
+  tabTitleContainer.appendChild(tabTitle);
+  tabTitleContainer.appendChild(tabSubTitle);
+
+parent.appendChild(tabParent);
+
+
+axios.get('https://api.github.com/users/MarFan/followers')
+  .then(res => {
+    res.data.forEach(user => {
+      tabParent.appendChild(createTab(user));
+    })  
+  });  
+
 /* Step 2: Inspect and study the data coming back, this is YOUR 
    github info! You will need to understand the structure of this 
    data in order to use it to build your component function 
@@ -24,32 +65,113 @@
           user, and adding that card to the DOM.
 */
 
-const followersArray = [];
 
-/* Step 3: Create a function that accepts a single object as its only argument,
-          Using DOM methods and properties, create a component that will return the following DOM element:
+// End add followers tabs
 
-<div class="card">
-  <img src={image url of user} />
-  <div class="card-info">
-    <h3 class="name">{users name}</h3>
-    <p class="username">{users user name}</p>
-    <p>Location: {users location}</p>
-    <p>Profile:  
-      <a href={address to users github page}>{address to users github page}</a>
-    </p>
-    <p>Followers: {users followers count}</p>
-    <p>Following: {users following count}</p>
-    <p>Bio: {users bio}</p>
-  </div>
-</div>
+function userCard(obj) {
 
-*/
+  //console.log(obj.login, obj.login === 'MarFan', obj.login.toLowerCase() !== 'marfan', obj.login.toLowerCase(), obj.login.toLowerCase().length, 'Jonah' === 'MarFan')
 
-/* List of LS Instructors Github username's: 
-  tetondan
-  dustinmyers
-  justsml
-  luishrd
-  bigknell
-*/
+  if(obj.login !== 'MarFan'){
+    console.log(obj.login)
+  }
+  
+
+  const newCard = document.createElement('div');
+    newCard.classList.add('card')
+  const userImg = document.createElement('img');
+    userImg.src = obj.avatar_url;
+  
+  const userClose = document.createElement('div');
+    userClose.textContent = '\u0078';
+    userClose.classList.add('close');
+  
+  const newCardInfo = document.createElement('div');
+    newCardInfo.classList.add('card-info');
+  const nameTitle = document.createElement('h3');
+    nameTitle.textContent = obj.name
+    nameTitle.classList.add('name');
+  const nameUser = document.createElement('p');
+    nameUser.classList.add('username');
+    nameUser.textContent = obj.login;
+  const userLocation = document.createElement('p');
+    userLocation.textContent = obj.location;
+  const userProfile = document.createElement('p');
+    userProfile.textContent = 'Profile: ';
+  const profileLink = document.createElement('a');
+    profileLink.href = obj.html_url;
+    profileLink.target = "_blank";
+    profileLink.textContent = 'view';
+  const cardFollowers = document.createElement('p');
+    cardFollowers.textContent = `Followers: ${obj.followers}`;
+  const cardFollowing = document.createElement('p');
+    cardFollowing.textContent = `Following: ${obj.following}`;
+  const userBio = document.createElement('p');
+    userBio.textContent = `Bio : ${obj.bio}`;
+
+  const gitHubChart = document.createElement('div');
+    gitHubChart.classList.add('calendar');
+
+  newCard.appendChild(userImg);
+  newCard.appendChild(userClose);
+  newCard.appendChild(newCardInfo);
+  newCard.appendChild(gitHubChart);
+  newCardInfo.appendChild(nameTitle);
+  newCardInfo.appendChild(nameUser);
+  newCardInfo.appendChild(userLocation);
+  newCardInfo.appendChild(userProfile);
+  newCardInfo.appendChild(cardFollowers);
+  newCardInfo.appendChild(cardFollowing);
+  newCardInfo.appendChild(userBio);
+  userProfile.appendChild(profileLink);
+
+  GitHubCalendar(gitHubChart, obj.login, {responsive: true});
+
+  
+  userClose.addEventListener('click', () => {
+    TweenMax.to(newCard, .5, {autoAlpha: 0, display: 'none'})
+  })
+
+  return newCard;
+}
+
+
+function createTab(follower){
+  const followerTab = document.createElement('div')
+    followerTab.classList.add('follower');
+    followerTab.style.display = 'flex';
+    followerTab.style.alignItems = 'center';
+    followerTab.style.borderRadius = '6px';
+    followerTab.style.border = '1px solid lightgray';
+    followerTab.style.margin = '4px';
+    followerTab.style.cursor = 'pointer';
+  const followerAvatar = document.createElement('img');
+    followerAvatar.src = follower.avatar_url;
+    followerAvatar.style.width = '32px';
+    followerAvatar.style.height = 'auto';
+    
+  const followerName = document.createElement('span');
+    followerName.textContent = follower.login;
+    followerName.style.padding = '0 12px';
+    followerName.style.fontWeight = 'bold';
+    followerName.style.fontSize = '14px';
+
+  followerTab.appendChild(followerAvatar);
+  followerTab.appendChild(followerName);
+
+  followerTab.addEventListener('click', () => {
+    getUserData(follower.url);
+  })
+
+  return followerTab;
+
+}
+
+function getUserData(url) {
+
+  axios.get(url)
+    .then(res => {
+      parent.appendChild(userCard(res.data));
+    });
+
+} 
