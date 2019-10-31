@@ -16,6 +16,7 @@ let myData = axios.get('https://api.github.com/users/marfan')
 const tabParent = document.createElement('div');
   tabParent.classList.add('tabs')
   tabParent.classList.add('card')
+  tabParent.style.flexDirection = 'row';
   tabParent.style.flexWrap = 'wrap';
   tabParent.style.justifyContent = 'space-evenly';
   tabParent.style.textAlign = 'center';
@@ -69,23 +70,12 @@ axios.get('https://api.github.com/users/MarFan/followers')
 // End add followers tabs
 
 function userCard(obj) {
-
-  //console.log(obj.login, obj.login === 'MarFan', obj.login.toLowerCase() !== 'marfan', obj.login.toLowerCase(), obj.login.toLowerCase().length, 'Jonah' === 'MarFan')
-
-  if(obj.login !== 'MarFan'){
-    console.log(obj.login)
-  }
-  
-
   const newCard = document.createElement('div');
-    newCard.classList.add('card')
+    newCard.classList.add('card');
+  const userInfoContainer = document.createElement('div');
+    userInfoContainer.classList.add('userInfoContainer');
   const userImg = document.createElement('img');
     userImg.src = obj.avatar_url;
-  
-  const userClose = document.createElement('div');
-    userClose.textContent = '\u0078';
-    userClose.classList.add('close');
-  
   const newCardInfo = document.createElement('div');
     newCardInfo.classList.add('card-info');
   const nameTitle = document.createElement('h3');
@@ -112,10 +102,11 @@ function userCard(obj) {
   const gitHubChart = document.createElement('div');
     gitHubChart.classList.add('calendar');
 
-  newCard.appendChild(userImg);
-  newCard.appendChild(userClose);
-  newCard.appendChild(newCardInfo);
+  newCard.appendChild(userInfoContainer);
   newCard.appendChild(gitHubChart);
+
+  userInfoContainer.appendChild(userImg);
+  userInfoContainer.appendChild(newCardInfo);
   newCardInfo.appendChild(nameTitle);
   newCardInfo.appendChild(nameUser);
   newCardInfo.appendChild(userLocation);
@@ -127,10 +118,18 @@ function userCard(obj) {
 
   GitHubCalendar(gitHubChart, obj.login, {responsive: true});
 
+  if(obj.login !== 'MarFan'){
+    const userClose = document.createElement('div');
+      userClose.textContent = '\u0078';
+      userClose.classList.add('close');
+      newCard.appendChild(userClose);
+
+      userClose.addEventListener('click', () => {
+        TweenMax.to(newCard, .5, {autoAlpha: 0, display: 'none'})
+      })
+  }
   
-  userClose.addEventListener('click', () => {
-    TweenMax.to(newCard, .5, {autoAlpha: 0, display: 'none'})
-  })
+  
 
   return newCard;
 }
